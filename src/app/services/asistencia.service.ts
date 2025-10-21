@@ -18,8 +18,11 @@ export class AsistenciaService {
     return this.http.put<Asistencia>(`${this.base}/${id}`, body);
   }
 
-  updateRespuestaObservacion(id: number, respuesta: string) {
-    return this.http.put<Asistencia>(`${this.base}/${id}/respuestaObservacion`, { respuestaObservacion: respuesta });
+  updateRespuestaObservacion(id: number, respuestaObservacion: string) {
+    return this.http.put<Asistencia>(
+      `${this.base}/${id}/respuestaObservacion`,
+      { respuestaObservacion }
+    );
   }
 
   importar(file: File, fecha: string) {
