@@ -1,17 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { AsistenciaService } from '../../services/asistencia.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-lista-asistencias',
   template: `
-  <div class="container">
+  <div class="container mt-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        👋 Bienvenido, <strong>{{ username }}</strong>
+        <span class="badge bg-info text-dark ms-2">{{ role }}</span>
+      </div>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar sesión</button>
+    </div>
+
     <h4>Asistencias</h4>
 
     <div class="d-flex mb-3">
       <input type="date" class="form-control w-auto" [(ngModel)]="fecha">
       <button class="btn btn-secondary ms-2" (click)="buscar()">Buscar</button>
       <button class="btn btn-success ms-2" (click)="exportar()">Exportar</button>
-      <label class="btn btn-outline-primary ms-2">
+
+      <!-- 👇 Solo el ENCARGADO puede importar -->
+      <label *ngIf="role === 'ENCARGADO'" class="btn btn-outline-primary ms-2">
         Importar <input type="file" hidden (change)="onFile($event)">
       </label>
     </div>
@@ -37,7 +49,7 @@ import { AsistenciaService } from '../../services/asistencia.service';
             <select 
               class="form-select form-select-sm" 
               [(ngModel)]="a.respuestaObservacion"
-              [disabled]="a.enviado">
+              [disabled]="a.enviado || (role !== 'CONTROL_ASISTENCIA' && role !== 'ENCARGADO')">
               <option value="">Seleccione...</option>
               <option value="Indicó generar marcación">Indicó generar marcación</option>
               <option value="Olvidó marcar">Olvidó marcar</option>
@@ -46,19 +58,21 @@ import { AsistenciaService } from '../../services/asistencia.service';
             </select>
           </td>
           <td>
-            <!-- Botones dinámicos -->
-            <button *ngIf="!a.enviado" 
+            <!-- Botón Guardar -->
+            <button *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && !a.enviado" 
                     class="btn btn-sm btn-primary"
                     (click)="guardarRespuesta(a)">
               Guardar
             </button>
 
-            <button *ngIf="a.enviado" 
+            <!-- Botón Editar -->
+            <button *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && a.enviado" 
                     class="btn btn-sm btn-warning"
                     (click)="editar(a)">
               Editar
             </button>
 
+            <!-- Estado Enviado -->
             <button *ngIf="a.enviado"
                     class="btn btn-sm btn-success"
                     disabled>
@@ -74,12 +88,23 @@ import { AsistenciaService } from '../../services/asistencia.service';
 export class ListaAsistenciasComponent implements OnInit {
   fecha = new Date().toISOString().slice(0, 10);
   asistencias: any[] = [];
-  selectedFile?: File;
+  username: string | null = '';
+  role: string | null = '';
 
-  constructor(private svc: AsistenciaService) {}
+  constructor(
+    private svc: AsistenciaService,
+    private auth: AuthService
+  ) {}
 
   ngOnInit() {
+    this.username = this.auth.getUsernameFromToken();
+    this.role = this.auth.getRole();
     this.buscar();
+  }
+
+  logout() {
+    this.auth.logout();
+    window.location.href = '/login';
   }
 
   buscar() {
@@ -87,7 +112,7 @@ export class ListaAsistenciasComponent implements OnInit {
       this.asistencias = r.map((a: any) => ({
         ...a,
         respuestaObservacion: a.respuestaObservacion || '',
-        enviado: !!a.respuestaObservacion // si ya tiene respuesta, se marca como enviado
+        enviado: !!a.respuestaObservacion
       }));
     });
   }
@@ -143,4 +168,6 @@ export class ListaAsistenciasComponent implements OnInit {
     a.enviado = false;
   }
 }
+
+
 
