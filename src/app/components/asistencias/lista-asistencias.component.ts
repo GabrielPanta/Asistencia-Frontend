@@ -4,90 +4,15 @@ import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-lista-asistencias',
-  template: `
-  <div class="container mt-3">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        👋 Bienvenido, <strong>{{ username }}</strong>
-        <span class="badge bg-info text-dark ms-2">{{ role }}</span>
-      </div>
-      <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar sesión</button>
-    </div>
-
-    <h4>Asistencias</h4>
-
-    <div class="d-flex mb-3">
-      <input type="date" class="form-control w-auto" [(ngModel)]="fecha">
-      <button class="btn btn-secondary ms-2" (click)="buscar()">Buscar</button>
-      <button class="btn btn-success ms-2" (click)="exportar()">Exportar</button>
-
-      <!-- 👇 Solo el ENCARGADO puede importar -->
-      <label *ngIf="role === 'ENCARGADO'" class="btn btn-outline-primary ms-2">
-        Importar <input type="file" hidden (change)="onFile($event)">
-      </label>
-    </div>
-
-    <table class="table table-striped align-middle">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>DNI</th>
-          <th>Nombre</th>
-          <th>Observación</th>
-          <th>Respuesta Observación</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let a of asistencias">
-          <td>{{ a.id }}</td>
-          <td>{{ a.dni }}</td>
-          <td>{{ a.apellidosNombres }}</td>
-          <td>{{ a.observacion }}</td>
-          <td>
-            <select 
-              class="form-select form-select-sm" 
-              [(ngModel)]="a.respuestaObservacion"
-              [disabled]="a.enviado || (role !== 'CONTROL_ASISTENCIA' && role !== 'ENCARGADO')">
-              <option value="">Seleccione...</option>
-              <option value="Indicó generar marcación">Indicó generar marcación</option>
-              <option value="Olvidó marcar">Olvidó marcar</option>
-              <option value="Trabajador no reportado en planilla">Trabajador no reportado en planilla</option>
-              <option value="Ausente">Ausente</option>
-            </select>
-          </td>
-          <td>
-            <!-- Botón Guardar -->
-            <button *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && !a.enviado" 
-                    class="btn btn-sm btn-primary"
-                    (click)="guardarRespuesta(a)">
-              Guardar
-            </button>
-
-            <!-- Botón Editar -->
-            <button *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && a.enviado" 
-                    class="btn btn-sm btn-warning"
-                    (click)="editar(a)">
-              Editar
-            </button>
-
-            <!-- Estado Enviado -->
-            <button *ngIf="a.enviado"
-                    class="btn btn-sm btn-success"
-                    disabled>
-              Enviado ✔
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  `
+  templateUrl: './lista-asistencias.component.html',
+  styleUrls: ['./lista-asistencias.component.scss']
 })
 export class ListaAsistenciasComponent implements OnInit {
   fecha = new Date().toISOString().slice(0, 10);
   asistencias: any[] = [];
+  asistenciasFiltradas: any[] = [];
+  observacionesUnicas: string[] = [];
+  filtroObservacion = '';
   username: string | null = '';
   role: string | null = '';
 
@@ -114,7 +39,22 @@ export class ListaAsistenciasComponent implements OnInit {
         respuestaObservacion: a.respuestaObservacion || '',
         enviado: !!a.respuestaObservacion
       }));
+      this.asistenciasFiltradas = [...this.asistencias];
+      this.obtenerObservacionesUnicas();
     });
+  }
+
+  obtenerObservacionesUnicas() {
+    const obsSet = new Set(this.asistencias.map(a => a.observacion).filter(Boolean));
+    this.observacionesUnicas = Array.from(obsSet);
+  }
+
+  filtrarObservacion() {
+    if (!this.filtroObservacion) {
+      this.asistenciasFiltradas = [...this.asistencias];
+    } else {
+      this.asistenciasFiltradas = this.asistencias.filter(a => a.observacion === this.filtroObservacion);
+    }
   }
 
   onFile(e: Event) {
@@ -168,6 +108,7 @@ export class ListaAsistenciasComponent implements OnInit {
     a.enviado = false;
   }
 }
+
 
 
 

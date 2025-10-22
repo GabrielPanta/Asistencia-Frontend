@@ -4,28 +4,33 @@ import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  template: `
-  <div class="container mt-5">
-    <h3>Login</h3>
-    <form (ngSubmit)="doLogin()">
-      <input class="form-control mb-2" [(ngModel)]="username" name="username" placeholder="usuario" required>
-      <input class="form-control mb-2" [(ngModel)]="password" name="password" placeholder="contraseña" type="password" required>
-      <button class="btn btn-primary" type="submit">Entrar</button>
-    </form>
-  </div>`
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   username = '';
   password = '';
+  loading = false;
+  errorMessage = '';
+
   constructor(private auth: AuthService, private router: Router) {}
 
-  doLogin() {
+  login() {
+    this.loading = true;
+    this.errorMessage = '';
+
     this.auth.login(this.username, this.password).subscribe({
       next: (res: any) => {
         this.auth.saveToken(res.token);
+        this.loading = false;
         this.router.navigate(['/asistencias']);
       },
-      error: err => alert('Credenciales incorrectas')
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = 'Usuario o contraseña incorrectos';
+        console.error(err);
+      }
     });
   }
 }
+

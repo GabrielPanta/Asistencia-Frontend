@@ -1,0 +1,82 @@
+<div class="container mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      👋 Bienvenido, <strong>{{ username }}</strong>
+      <span class="badge bg-info text-dark ms-2">{{ role }}</span>
+    </div>
+    <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar sesión</button>
+  </div>
+
+  <h4>Asistencias</h4>
+
+  <div class="d-flex mb-3 flex-wrap align-items-center">
+    <input type="date" class="form-control w-auto" [(ngModel)]="fecha" />
+    <button class="btn btn-secondary ms-2" (click)="buscar()">Buscar</button>
+    <button class="btn btn-success ms-2" (click)="exportar()">Exportar</button>
+
+    <!-- Solo ENCARGADO puede importar -->
+    <label *ngIf="role === 'ENCARGADO'" class="btn btn-outline-primary ms-2">
+      Importar <input type="file" hidden (change)="onFile($event)" />
+    </label>
+
+    <!-- 🔽 Filtro por observación -->
+    <div class="ms-3">
+      <select class="form-select" [(ngModel)]="filtroObservacion" (change)="filtrarObservacion()">
+        <option value="">-- Filtrar por observación --</option>
+        <option *ngFor="let o of observacionesUnicas" [value]="o">{{ o }}</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>DNI</th>
+        <th>Nombre</th>
+        <th>Observación</th>
+        <th>Respuesta Observación</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let a of asistenciasFiltradas">
+        <td>{{ a.id }}</td>
+        <td>{{ a.dni }}</td>
+        <td>{{ a.apellidosNombres }}</td>
+        <td>{{ a.observacion }}</td>
+        <td>
+          <select
+            class="form-select form-select-sm"
+            [(ngModel)]="a.respuestaObservacion"
+            [disabled]="a.enviado || role === 'ENCARGADO' ? false : role !== 'CONTROL_ASISTENCIA'">
+            <option value="">Seleccione...</option>
+            <option value="Indicó generar marcación">Indicó generar marcación</option>
+            <option value="Olvidó marcar">Olvidó marcar</option>
+            <option value="Trabajador no reportado en planilla">Trabajador no reportado en planilla</option>
+            <option value="Ausente">Ausente</option>
+          </select>
+        </td>
+        <td>
+          <button
+            *ngIf="role === 'CONTROL_ASISTENCIA' && !a.enviado"
+            class="btn btn-sm btn-primary"
+            (click)="guardarRespuesta(a)">
+            Guardar
+          </button>
+
+          <button
+            *ngIf="role === 'CONTROL_ASISTENCIA' && a.enviado"
+            class="btn btn-sm btn-warning"
+            (click)="editar(a)">
+            Editar
+          </button>
+
+          <button *ngIf="a.enviado" class="btn btn-sm btn-success" disabled>
+            Enviado ✔
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

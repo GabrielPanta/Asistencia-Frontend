@@ -1,0 +1,12 @@
+.container {
+  max-width: 1000px;
+}
+
+.badge {
+  font-size: 0.9rem;
+}
+
+button[disabled] {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
