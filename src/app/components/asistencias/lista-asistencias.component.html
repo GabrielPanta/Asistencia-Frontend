@@ -31,7 +31,7 @@
   <table class="table table-striped align-middle">
     <thead>
       <tr>
-        <th>ID</th>
+        <th>Zona</th>
         <th>DNI</th>
         <th>Nombre</th>
         <th>Observación</th>
@@ -41,7 +41,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let a of asistenciasFiltradas">
-        <td>{{ a.id }}</td>
+        <td>{{ a.zona }}</td>
         <td>{{ a.dni }}</td>
         <td>{{ a.apellidosNombres }}</td>
         <td>{{ a.observacion }}</td>
@@ -49,7 +49,7 @@
           <select
             class="form-select form-select-sm"
             [(ngModel)]="a.respuestaObservacion"
-            [disabled]="a.enviado || role === 'ENCARGADO' ? false : role !== 'CONTROL_ASISTENCIA'">
+            [disabled]="a.enviado && !a.editando">
             <option value="">Seleccione...</option>
             <option value="Indicó generar marcación">Indicó generar marcación</option>
             <option value="Olvidó marcar">Olvidó marcar</option>
@@ -58,21 +58,24 @@
           </select>
         </td>
         <td>
+          <!-- Botón Guardar -->
           <button
-            *ngIf="role === 'CONTROL_ASISTENCIA' && !a.enviado"
-            class="btn btn-sm btn-primary"
+            *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && (!a.enviado || a.editando)"
+            class="btn btn-sm btn-primary me-1"
             (click)="guardarRespuesta(a)">
             Guardar
           </button>
 
+          <!-- Botón Editar -->
           <button
-            *ngIf="role === 'CONTROL_ASISTENCIA' && a.enviado"
-            class="btn btn-sm btn-warning"
+            *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && a.enviado && !a.editando"
+            class="btn btn-sm btn-warning me-1"
             (click)="editar(a)">
             Editar
           </button>
 
-          <button *ngIf="a.enviado" class="btn btn-sm btn-success" disabled>
+          <!-- Estado Enviado -->
+          <button *ngIf="a.enviado && !a.editando" class="btn btn-sm btn-success" disabled>
             Enviado ✔
           </button>
         </td>
@@ -80,3 +83,5 @@
     </tbody>
   </table>
 </div>
+
+
