@@ -1,25 +1,40 @@
-<div class="container mt-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      👋 Bienvenido, <strong>{{ username }}</strong>
-      <span class="badge bg-info text-dark ms-2">{{ role }}</span>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+      <img src="assets/Logo verfrut.png" alt="Logo" width="40" height="40" class="me-2 rounded-circle" />
+      Reporte de Asistencias
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+      <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center">
+        <li class="nav-item me-3 text-light">
+          👋 Bienvenido, <strong>{{ username }}</strong>
+          <span class="badge bg-light text-dark ms-1">{{ role }}</span>
+        </li>
+        <li class="nav-item">
+          <button class="btn btn-outline-light btn-sm" (click)="logout()">Cerrar sesión</button>
+        </li>
+      </ul>
     </div>
-    <button class="btn btn-outline-danger btn-sm" (click)="logout()">Cerrar sesión</button>
   </div>
+</nav>
 
-  <h4>Asistencias</h4>
-
+<!-- CONTENIDO -->
+<div class="container mt-4">
   <div class="d-flex mb-3 flex-wrap align-items-center">
     <input type="date" class="form-control w-auto" [(ngModel)]="fecha" />
     <button class="btn btn-secondary ms-2" (click)="buscar()">Buscar</button>
     <button class="btn btn-success ms-2" (click)="exportar()">Exportar</button>
 
-    <!-- Solo ENCARGADO puede importar -->
     <label *ngIf="role === 'ENCARGADO'" class="btn btn-outline-primary ms-2">
       Importar <input type="file" hidden (change)="onFile($event)" />
     </label>
 
-    <!-- 🔽 Filtro por observación -->
     <div class="ms-3">
       <select class="form-select" [(ngModel)]="filtroObservacion" (change)="filtrarObservacion()">
         <option value="">-- Filtrar por observación --</option>
@@ -31,19 +46,29 @@
   <table class="table table-striped align-middle">
     <thead>
       <tr>
-        <th>Zona</th>
         <th>DNI</th>
         <th>Nombre</th>
+        <th>Zona</th>
+        <th>Cuartel</th>
+        <th>Labor</th>
+        <th>Placa</th>
+        <th>Ruta</th>
+        <th>Código</th>
         <th>Observación</th>
         <th>Respuesta Observación</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let a of asistenciasFiltradas">
-        <td>{{ a.zona }}</td>
+      <tr *ngFor="let a of asistenciasFiltradas" [class.table-warning]="a.editando">
         <td>{{ a.dni }}</td>
         <td>{{ a.apellidosNombres }}</td>
+        <td>{{ a.zona }}</td>
+        <td>{{ a.cuartel }}</td>
+        <td>{{ a.labor }}</td>
+        <td>{{ a.placa }}</td>
+        <td>{{ a.ruta }}</td>
+        <td>{{ a.codigo }}</td>
         <td>{{ a.observacion }}</td>
         <td>
           <select
@@ -58,23 +83,18 @@
           </select>
         </td>
         <td>
-          <!-- Botón Guardar -->
           <button
             *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && (!a.enviado || a.editando)"
             class="btn btn-sm btn-primary me-1"
             (click)="guardarRespuesta(a)">
             Guardar
           </button>
-
-          <!-- Botón Editar -->
           <button
             *ngIf="(role === 'CONTROL_ASISTENCIA' || role === 'ENCARGADO') && a.enviado && !a.editando"
             class="btn btn-sm btn-warning me-1"
             (click)="editar(a)">
             Editar
           </button>
-
-          <!-- Estado Enviado -->
           <button *ngIf="a.enviado && !a.editando" class="btn btn-sm btn-success" disabled>
             Enviado ✔
           </button>
@@ -83,5 +103,7 @@
     </tbody>
   </table>
 </div>
+
+
 
 

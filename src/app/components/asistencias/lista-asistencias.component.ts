@@ -5,7 +5,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-lista-asistencias',
   templateUrl: './lista-asistencias.component.html',
-  styleUrls: ['./lista-asistencias.component.scss']
+  /*styleUrls: ['./lista-asistencias.component.scss']*/
 })
 export class ListaAsistenciasComponent implements OnInit {
   fecha = new Date().toISOString().slice(0, 10);
@@ -19,7 +19,7 @@ export class ListaAsistenciasComponent implements OnInit {
   constructor(
     private svc: AsistenciaService,
     private auth: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.username = this.auth.getUsernameFromToken();
@@ -33,19 +33,26 @@ export class ListaAsistenciasComponent implements OnInit {
   }
 
   buscar() {
-    this.svc.listar(this.fecha).subscribe(r => {
-      this.asistencias = r.map((a: any) => ({
-        ...a,
-        respuestaObservacion: a.respuestaObservacion || '',
-        enviado: !!a.respuestaObservacion
-      }));
-      this.asistenciasFiltradas = [...this.asistencias];
-      this.obtenerObservacionesUnicas();
+    this.svc.listar(this.fecha).subscribe({
+      next: (r) => {
+        // ✅ Agrega banderas de control al cargar los datos
+        this.asistencias = r.map((a: any) => ({
+          ...a,
+          respuestaObservacion: a.respuestaObservacion || '',
+          enviado: !!a.respuestaObservacion,
+          editando: false
+        }));
+        this.asistenciasFiltradas = [...this.asistencias];
+        this.obtenerObservacionesUnicas();
+      },
+      error: () => alert('Error al listar asistencias')
     });
   }
 
   obtenerObservacionesUnicas() {
-    const obsSet = new Set(this.asistencias.map(a => a.observacion).filter(Boolean));
+    const obsSet = new Set(
+      this.asistencias.map(a => a.observacion).filter(Boolean)
+    );
     this.observacionesUnicas = Array.from(obsSet);
   }
 
@@ -53,7 +60,9 @@ export class ListaAsistenciasComponent implements OnInit {
     if (!this.filtroObservacion) {
       this.asistenciasFiltradas = [...this.asistencias];
     } else {
-      this.asistenciasFiltradas = this.asistencias.filter(a => a.observacion === this.filtroObservacion);
+      this.asistenciasFiltradas = this.asistencias.filter(
+        a => a.observacion === this.filtroObservacion
+      );
     }
   }
 
@@ -63,30 +72,32 @@ export class ListaAsistenciasComponent implements OnInit {
     const f = fi[0];
     this.svc.importar(f, this.fecha).subscribe({
       next: () => {
-        alert('Archivo subido correctamente');
+        alert('Archivo importado correctamente');
         this.buscar();
       },
-      error: () => alert('Error importando')
+      error: () => alert('Error al importar archivo')
     });
   }
 
   exportar() {
-    this.svc.exportar(this.fecha).subscribe(
-      resp => {
+    this.svc.exportar(this.fecha).subscribe({
+      next: (resp) => {
         const contentDisposition = resp.headers.get('content-disposition') || '';
         const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
         const filename = matches ? matches[1] : `reporte_${this.fecha}.xlsx`;
+
         const blob = new Blob([resp.body as Blob], {
           type: resp.body?.type || 'application/octet-stream'
         });
+
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
         link.download = filename;
         link.click();
         window.URL.revokeObjectURL(link.href);
       },
-      () => alert('Error al exportar')
-    );
+      error: () => alert('Error al exportar')
+    });
   }
 
   guardarRespuesta(a: any) {
@@ -98,6 +109,7 @@ export class ListaAsistenciasComponent implements OnInit {
     this.svc.updateRespuestaObservacion(a.id, a.respuestaObservacion).subscribe({
       next: () => {
         a.enviado = true;
+        a.editando = false;
         alert('Respuesta guardada correctamente');
       },
       error: () => alert('Error al guardar la respuesta')
@@ -105,9 +117,11 @@ export class ListaAsistenciasComponent implements OnInit {
   }
 
   editar(a: any) {
-    a.enviado = false;
+    a.editando = true;
+    a.enviado = false; // ✅ permite modificar el campo nuevamente
   }
 }
+
 
 
 
