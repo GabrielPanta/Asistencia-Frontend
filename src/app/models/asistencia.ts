@@ -1,12 +1,13 @@
 export interface Asistencia {
   id?: number;
+  empresaTrabajador?:string
   codigo?: string;
   apellidosNombres?: string;
   dni?: string;
   regimen?: string;
-  fechaIngreso?: string; // ISO date
+  fechaIngreso?: string;
   horaIngreso?: string;
-  totalHoras?: number;
+  totalHoras?: string;
   zona?: string;
   ruta?: string;
   cuadrilla?: string;

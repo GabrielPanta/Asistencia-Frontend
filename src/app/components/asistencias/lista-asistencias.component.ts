@@ -21,6 +21,9 @@ export class ListaAsistenciasComponent implements OnInit {
     private auth: AuthService
   ) { }
 
+  empresasUnicas: string[] = [];
+  filtroEmpresa: string = '';
+
   ngOnInit() {
     this.username = this.auth.getUsernameFromToken();
     this.role = this.auth.getRole();
@@ -44,6 +47,7 @@ export class ListaAsistenciasComponent implements OnInit {
         }));
         this.asistenciasFiltradas = [...this.asistencias];
         this.obtenerObservacionesUnicas();
+        this.obtenerEmpresasUnicas();
       },
       error: () => alert('Error al listar asistencias')
     });
@@ -65,6 +69,21 @@ export class ListaAsistenciasComponent implements OnInit {
       );
     }
   }
+
+
+  
+  obtenerEmpresasUnicas() {
+    this.empresasUnicas = [...new Set(this.asistencias.map(a => a.empresaTrabajador))];
+  }
+
+  filtrarEmpresa() {
+    if (this.filtroEmpresa) {
+      this.asistenciasFiltradas = this.asistencias.filter(a => a.empresaTrabajador === this.filtroEmpresa);
+    } else {
+      this.asistenciasFiltradas = [...this.asistencias];
+    }
+  }
+
 
   onFile(e: Event) {
     const fi = (e.target as HTMLInputElement).files;

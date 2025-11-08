@@ -13,7 +13,7 @@
     <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
       <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item me-3 text-light">
-          👋 Bienvenido, <strong>{{ username }}</strong>
+          👋 Bienvenido, <!--<strong>{{ username }}</strong>-->
           <span class="badge bg-light text-dark ms-1">{{ role }}</span>
         </li>
         <li class="nav-item">
@@ -41,11 +41,21 @@
         <option *ngFor="let o of observacionesUnicas" [value]="o">{{ o }}</option>
       </select>
     </div>
-  </div>
+    
+    <!-- NUEVO FILTRO DE EMPRESA -->
+    <div class="ms-3">
+      <select class="form-select" [(ngModel)]="filtroEmpresa" (change)="filtrarEmpresa()">
+        <option value="">-- Filtrar por empresa --</option>
+        <option *ngFor="let e of empresasUnicas" [value]="e">{{ e }}</option>
+      </select>
+    </div>
+    <!-- FIN NUEVO FILTRO -->
+    </div>
 
   <table class="table table-striped align-middle">
     <thead>
       <tr>
+        <th>Empresa</th>
         <th>DNI</th>
         <th>Nombre</th>
         <th>Zona</th>
@@ -61,6 +71,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let a of asistenciasFiltradas" [class.table-warning]="a.editando">
+        <td>{{ a.empresaTrabajador}}</td>
         <td>{{ a.dni }}</td>
         <td>{{ a.apellidosNombres }}</td>
         <td>{{ a.zona }}</td>
