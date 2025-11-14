@@ -11,8 +11,9 @@ export class AsistenciaService {
   constructor(private http: HttpClient) {}
 
   listar(fecha: string): Observable<Asistencia[]> {
-    return this.http.get<Asistencia[]>(`${this.base}/${fecha}`);
-  }
+  return this.http.get<Asistencia[]>(`${this.base}/empresa/${fecha}`);
+}
+
 
   update(id: number, body: Partial<Asistencia>) {
     return this.http.put<Asistencia>(`${this.base}/${id}`, body);
@@ -29,7 +30,10 @@ export class AsistenciaService {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('fecha', fecha);
-    return this.http.post(`${this.base}/importar`, fd, { observe: 'events', reportProgress: true });
+    return this.http.post(`${this.base}/importar/empresa`, fd, {
+      observe: 'events',
+      reportProgress: true,
+    });
   }
 
   exportar(fecha: string): Observable<HttpResponse<Blob>> {
